@@ -1,0 +1,132 @@
+
+let gridContainer = document.getElementById("grid-container");
+
+let gridItemsData = [
+    { id: 'one', name: 'Casual Shirt', price: '$45', desc: 'This is a casual shirt', img: 'img/pexels-thelazyartist-1108602.jpg' },
+    { id: 'two', name: 'Blazers Suite', price: '$25', desc: 'We have different colors', img: 'img/pexels-olly-837140.jpg' },
+    { id: 'three', name: 'Casual Shirt', price: '$15', desc: 'High quality casual shirt', img: 'img/pexels-nietjuh-934070.jpg' },
+    { id: 'four', name: 'Sketch', price: '$55', desc: 'Hand-made design clothes', img: 'img/pexels-craytive-1478477.jpg' },
+    { id: 'five', name: 'Vintage Shirt', price: '$13', desc: 'Made for the young and old', img: 'img/pexels-kowalievska-1158670.jpg' },
+    { id: 'six', name: 'Long Skirt', price: '$25', desc: 'Made for winter period', img: 'img/pexels-kowalievska-1126993.jpg' },
+    { id: 'seven', name: 'Casual Shirt', price: '$35', desc: 'Perfect for daily wear', img: 'img/pexels-godisable-jacob-226636-794064.jpg' },
+    { id: 'eight', name: "90's Suite", price: '$20', desc: 'Gives the old-money vibes', img: 'img/pexels-godisable-jacob-226636-1154861.jpg' }
+];
+
+let cart = JSON.parse(localStorage.getItem("data")) || [];
+
+let generateShop = () => {
+    gridContainer.innerHTML = gridItemsData
+        .map((x) => {
+            let { id, name, price, desc, img } = x;
+            let search = cart.find((item) => item.id === id) || { item: 0 };
+            return `
+                <div class="grid grid1">
+                    <figure>
+                        <img class="img-fluid" src="${img}" alt="${name}" />
+                        <figcaption>
+                            <div class="count">
+                                <div class="description">
+                                    <h2 class="brand-name">${name}</h2>
+                                    <p class="brand-content">${desc}</p>
+                                </div>
+                                <div class="count-container">
+                                    <i onclick="decrement('${id}')" class="fa fa-minus"></i>
+                                    <span id="${id}">${search.item}</span>
+                                    <i onclick="increment('${id}')" class="fa fa-plus"></i>
+                                </div>
+                            </div>
+                            <div class="heart"><i class="fa fa-heart"></i></div>
+                            <div id="price"><span id="amount">${price}</span></div>
+                            <div class="btn-container">
+                                <button onclick="addToCart('${id}')" id="btn">
+                                    <i class="fa fa-shopping-cart"></i> Add to Cart
+                                </button>
+                            </div>
+                        </figcaption>
+                    </figure>
+                </div>`;
+        })
+        .join(" ");
+};
+
+generateShop();
+
+let increment = (id) => {
+    let search = cart.find((item) => item.id === id);
+    if (!search) {
+        cart.push({ id: id, item: 1 });
+    } else {
+        search.item += 1;
+    }
+    update(id);
+    localStorage.setItem("data", JSON.stringify(cart));
+};
+
+let decrement = (id) => {
+    let search = cart.find((item) => item.id === id);
+    if (!search || search.item === 0) return;
+    search.item -= 1;
+    cart = cart.filter((item) => item.item !== 0);
+    update(id);
+    localStorage.setItem("data", JSON.stringify(cart));
+};
+
+let update = (id) => {
+    let search = cart.find((item) => item.id === id);
+    document.getElementById(id).innerHTML = search ? search.item : 0;
+    calculation();
+};
+
+let addToCart = (id) => {
+    increment(id);
+    generateCartItems();
+};
+
+let calculation = () => {
+    let cartIcon = document.getElementById("cart-amount");
+    cartIcon.innerHTML = cart.map((x) => x.item).reduce((acc, item) => acc + item, 0);
+};
+
+let generateCartItems = () => {
+    let cartContent = document.getElementById("cart-content");
+    if (cart.length !== 0) {
+        cartContent.innerHTML = cart
+            .map((x) => {
+                let { id, item } = x;
+                let product = gridItemsData.find((y) => y.id === id);
+                return `
+                    <div class="cart-container">
+                        <img class="cart-thumb" src="${product.img}" alt="${product.name}">
+                        <div class="cart-price">
+                            <span id="display-num">${item}</span>
+                            <p id="amount">${product.price}</p>
+                            <p>${item * product.price}</P>
+                        </div>
+                        <span>${product.name}</span>
+                        <i title="delete" onclick="removeItems('${id}')" class="fas fa-trash"></i>
+                    </div>`;
+            })
+            .join("");
+    } else {
+        cartContent.innerHTML = `<p class="empty">Cart is Empty</p>`;
+    }
+};
+
+let removeItems = (id) => {
+    cart = cart.filter((item) => item.id !== id);
+    generateCartItems();
+    calculation();
+    localStorage.setItem("data", JSON.stringify(cart));
+};
+
+calculation();
+generateCartItems();
+
+// like event listener
+const liked =document.querySelectorAll('.fa-heart')
+
+liked.forEach(like =>{
+    like.addEventListener('click', () =>{
+        like.classList.toggle('show')
+    })
+})
